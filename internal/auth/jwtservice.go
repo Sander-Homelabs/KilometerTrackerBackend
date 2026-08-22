@@ -65,7 +65,6 @@ func NewJwtService(db *pgxpool.Pool) (*JwtService, error) {
 func (jwtService JwtService) SignAccessToken(email string) (string, error) {
 	now := time.Now()
 	claims := jwt.MapClaims{
-		"sub":   email,
 		"email": email,
 		"iat":   now.Unix(),
 		"exp":   now.Add(AccessTokenExpiry).Unix(),
@@ -84,7 +83,6 @@ func (jwtService JwtService) SignAccessToken(email string) (string, error) {
 func (jwtService JwtService) SignRefreshToken(email string) (string, error) {
 	now := time.Now()
 	claims := jwt.MapClaims{
-		"sub":   email,
 		"email": email,
 		"iat":   now.Unix(),
 		"exp":   now.Add(RefreshTokenExpiry).Unix(),
@@ -100,7 +98,7 @@ func (jwtService JwtService) SignRefreshToken(email string) (string, error) {
 	return signed, nil
 }
 
-func (jwtService JwtService) VerifyAccessToken(tokenString string) bool {
+func (jwtService JwtService) VerifyAccessToken(tokenString string) (string, error) {
     token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
         if token.Method != jwt.SigningMethodES512 {
             return nil, fmt.Errorf("unexpected signing method: %v", token.Method.Alg())
@@ -109,7 +107,25 @@ func (jwtService JwtService) VerifyAccessToken(tokenString string) bool {
         return &jwtService.accessPrivateKey.PublicKey, nil
     })
 
-    return err == nil && token.Valid
+    if err != nil {
+        return "", fmt.Errorf("invalid refresh token: %w", err)
+    }
+
+    if !token.Valid {
+        return "", fmt.Errorf("invalid refresh token")
+    }
+
+    claims, ok := token.Claims.(jwt.MapClaims)
+    if !ok {
+        return "", fmt.Errorf("invalid token claims")
+    }
+
+    email, ok := claims["email"].(string)
+    if !ok || email == "" {
+        return "", fmt.Errorf("refresh token has no valid subject")
+    }
+
+    return email, nil
 }
 
 func (jwtService JwtService) VerifyRefreshToken(tokenString string) (string, error) {
@@ -134,7 +150,7 @@ func (jwtService JwtService) VerifyRefreshToken(tokenString string) (string, err
         return "", fmt.Errorf("invalid token claims")
     }
 
-    email, ok := claims["sub"].(string)
+    email, ok := claims["email"].(string)
     if !ok || email == "" {
         return "", fmt.Errorf("refresh token has no valid subject")
     }
