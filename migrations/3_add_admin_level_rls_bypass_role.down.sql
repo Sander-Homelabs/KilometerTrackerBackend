@@ -1,0 +1,7 @@
+REVOKE SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA kilometer_tracker FROM api_admin;
+REVOKE USAGE, SELECT ON ALL SEQUENCES IN SCHEMA kilometer_tracker FROM api_admin;
+
+ALTER ROLE api INHERIT;
+
+REVOKE api_admin FROM api;
+DROP ROLE IF EXISTS api_admin;
