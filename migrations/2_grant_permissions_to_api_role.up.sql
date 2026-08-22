@@ -1,0 +1,11 @@
+GRANT CONNECT ON DATABASE postgres TO api;
+
+GRANT USAGE ON SCHEMA kilometer_tracker TO api;
+
+GRANT SELECT, INSERT, UPDATE, DELETE
+ON ALL TABLES IN SCHEMA kilometer_tracker
+TO api;
+
+GRANT USAGE, SELECT
+ON ALL SEQUENCES IN SCHEMA kilometer_tracker
+TO api;
