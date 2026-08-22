@@ -69,7 +69,7 @@ func withTimeout(next http.Handler, timeout time.Duration) http.Handler {
 }
 
 func newDBPool(ctx context.Context) (*pgxpool.Pool, error) {
-	config, err := pgxpool.ParseConfig(os.Getenv("DATABASE_URL"))
+	config, err := pgxpool.ParseConfig(os.Getenv("DATABASE_URL_API"))
 	if err != nil {
 		return nil, err
 	}

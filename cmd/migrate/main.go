@@ -14,7 +14,7 @@ import (
 func main() {
 	_ = godotenv.Load()
 
-	databaseURL := os.Getenv("DATABASE_URL")
+	databaseURL := os.Getenv("DATABASE_URL_ADMIN")
 	if databaseURL == "" {
 		log.Fatal("DATABASE_URL is not set")
 	}
