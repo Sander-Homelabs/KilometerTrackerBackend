@@ -16,6 +16,10 @@ func NewDB(pool *pgxpool.Pool) *DB {
 	}
 }
 
+func (d *DB) Queries() *Queries {
+	return New(d.Pool)
+}
+
 func (d *DB) WithUser(
 	ctx context.Context,
 	email string,
