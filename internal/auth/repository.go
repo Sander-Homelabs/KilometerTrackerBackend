@@ -1,29 +1,56 @@
 package auth
 
 import (
-    "context"
+	"context"
+
 	"goch.dev/kmtracker/internal/db"
 )
 
 type Repository struct {
-    db *db.Queries
+	db *db.DB
 }
 
-func NewRepository(db *db.Queries) *Repository {
-    return &Repository{db: db}
+func NewRepository(database *db.DB) *Repository {
+	return &Repository{db: database}
 }
 
-func (r *Repository) InsertRefreshToken(ctx context.Context, email string, token string) error {
-    return r.db.InsertRefreshToken(ctx, db.InsertRefreshTokenParams{
-        Email: email,
-        Token: token,
-    })
+func (r *Repository) InsertRefreshToken(
+	ctx context.Context,
+	email string,
+	token string,
+) error {
+	return r.db.WithUser(ctx, email, func(q *db.Queries) error {
+		return q.InsertRefreshToken(ctx, db.InsertRefreshTokenParams{
+			Email: email,
+			Token: token,
+		})
+	})
 }
 
-func (r *Repository) DisableRefreshToken(ctx context.Context, token string) error {
-    return r.db.DisableRefreshToken(ctx, token)
+func (r *Repository) DisableRefreshToken(
+	ctx context.Context,
+	email string,
+	token string,
+) error {
+	return r.db.WithUser(ctx, email, func(q *db.Queries) error {
+		return q.DisableRefreshToken(ctx, token)
+	})
 }
 
-func (r *Repository) GetRefreshToken(ctx context.Context, token string) (db.RefreshToken, error) {
-    return r.db.GetRefreshToken(ctx, token)
+func (r *Repository) GetRefreshToken(
+	ctx context.Context,
+	email string,
+	token string,
+) (db.RefreshToken, error) {
+	var result db.RefreshToken
+
+	err := r.db.WithUser(ctx, email, func(q *db.Queries) error {
+		var err error
+
+		result, err = q.GetRefreshToken(ctx, token)
+
+		return err
+	})
+
+	return result, err
 }

@@ -143,16 +143,7 @@ func (s *JwtService) VerifyRefreshToken(
 	ctx context.Context,
 	tokenString string,
 ) (string, error) {
-	dbToken, err := s.repository.GetRefreshToken(ctx, tokenString)
-	if err != nil {
-		return "", fmt.Errorf("refresh token not found: %w", err)
-	}
-
-	if !dbToken.Active {
-		return "", fmt.Errorf("refresh token is disabled")
-	}
-
-	token, err := jwt.Parse(dbToken.Token, func(token *jwt.Token) (any, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
 		if token.Method != jwt.SigningMethodES512 {
 			return nil, fmt.Errorf(
 				"unexpected signing method: %v",
@@ -179,6 +170,15 @@ func (s *JwtService) VerifyRefreshToken(
 	email, ok := claims["email"].(string)
 	if !ok || email == "" {
 		return "", fmt.Errorf("refresh token has no valid email")
+	}
+	
+	dbToken, err := s.repository.GetRefreshToken(ctx, email, tokenString)
+	if err != nil {
+		return "", fmt.Errorf("refresh token not found: %w", err)
+	}
+
+	if !dbToken.Active {
+		return "", fmt.Errorf("refresh token is disabled")
 	}
 
 	return email, nil
@@ -222,9 +222,10 @@ func (s *JwtService) RefreshTokens(
 
 	if err := s.repository.DisableRefreshToken(
 		ctx,
+		email,
 		refreshToken,
 	); err != nil {
-		_ = s.repository.DisableRefreshToken(ctx, newRefreshToken)
+		_ = s.repository.DisableRefreshToken(ctx, email, newRefreshToken)
 
 		return JwtRefreshResponse{}, fmt.Errorf(
 			"failed to disable old refresh token: %w",

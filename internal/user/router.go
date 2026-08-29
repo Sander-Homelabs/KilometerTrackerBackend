@@ -6,7 +6,7 @@ import (
 	"goch.dev/kmtracker/internal/db"
 )
 
-func NewRouter(db *db.Queries) *http.ServeMux {
+func NewRouter(db *db.DB) *http.ServeMux {
 	mux := http.NewServeMux()
 
 	repository := NewRepository(db)

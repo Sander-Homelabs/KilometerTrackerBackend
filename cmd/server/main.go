@@ -31,16 +31,18 @@ func main() {
 	}
 	defer pool.Close()
 
-	queries := db.New(pool)
+	database := db.NewDB(pool)
 
-	jwtRepository := auth.NewRepository(queries)
+	jwtRepository := auth.NewRepository(database)
 
 	jwtService, err := auth.NewJwtService(jwtRepository)
 	if err != nil {
 		log.Fatalf("could not initialize jwt service: %v", err)
 	}
 
-	router := internal.Cors(internal.NewRouter(queries, jwtService))
+	router := internal.Cors(
+		internal.NewRouter(database, jwtService),
+	)
 
 	server := &http.Server{
 		Addr: ":8080",
