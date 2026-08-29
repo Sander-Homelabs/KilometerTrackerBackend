@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"crypto/ecdsa"
 	"crypto/x509"
 	"encoding/pem"
@@ -17,7 +18,7 @@ const (
 )
 
 type JwtService struct {
-    repository *Repository
+	repository       *Repository
 	accessPrivateKey *ecdsa.PrivateKey
 	refreshPrivateKey *ecdsa.PrivateKey
 }
@@ -28,41 +29,45 @@ type JwtRefreshResponse struct {
 }
 
 func NewJwtService(repository *Repository) (*JwtService, error) {
-	accessKeyString := os.Getenv("ACCESS_TOKEN_KEY")
-	if accessKeyString == "" {
-		return nil, fmt.Errorf("ACCESS_TOKEN_KEY is not set")
-	}
-
-	accessKeyBlock, _ := pem.Decode([]byte(accessKeyString))
-	if accessKeyBlock == nil {
-		return nil, fmt.Errorf("failed to decode PEM block for access token key")
-	}
-
-	accessKey, err := x509.ParseECPrivateKey(accessKeyBlock.Bytes)
+	accessPrivateKey, err := loadPrivateKey("ACCESS_TOKEN_KEY")
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse ECDSA private key: %w", err)
+		return nil, err
 	}
 
-	refreshKeyString := os.Getenv("REFRESH_TOKEN_KEY")
-	if refreshKeyString == "" {
-		return nil, fmt.Errorf("REFRESH_TOKEN_KEY is not set")
-	}
-
-	refreshKeyBlock, _ := pem.Decode([]byte(refreshKeyString))
-	if refreshKeyBlock == nil {
-		return nil, fmt.Errorf("failed to decode PEM block for refresh token key")
-	}
-
-	refreshKey, err := x509.ParseECPrivateKey(refreshKeyBlock.Bytes)
+	refreshPrivateKey, err := loadPrivateKey("REFRESH_TOKEN_KEY")
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse ECDSA private key: %w", err)
+		return nil, err
 	}
 
-	return &JwtService{repository: repository, accessPrivateKey: accessKey, refreshPrivateKey: refreshKey}, nil
+	return &JwtService{
+		repository:        repository,
+		accessPrivateKey:  accessPrivateKey,
+		refreshPrivateKey: refreshPrivateKey,
+	}, nil
 }
 
-func (jwtService JwtService) SignAccessToken(email string) (string, error) {
+func loadPrivateKey(envName string) (*ecdsa.PrivateKey, error) {
+	keyString := os.Getenv(envName)
+	if keyString == "" {
+		return nil, fmt.Errorf("%s is not set", envName)
+	}
+
+	keyBlock, _ := pem.Decode([]byte(keyString))
+	if keyBlock == nil {
+		return nil, fmt.Errorf("failed to decode PEM block for %s", envName)
+	}
+
+	key, err := x509.ParseECPrivateKey(keyBlock.Bytes)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse ECDSA private key %s: %w", envName, err)
+	}
+
+	return key, nil
+}
+
+func (s *JwtService) SignAccessToken(email string) (string, error) {
 	now := time.Now()
+
 	claims := jwt.MapClaims{
 		"email": email,
 		"iat":   now.Unix(),
@@ -71,7 +76,7 @@ func (jwtService JwtService) SignAccessToken(email string) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodES512, claims)
 
-	signed, err := token.SignedString(jwtService.accessPrivateKey)
+	signed, err := token.SignedString(s.accessPrivateKey)
 	if err != nil {
 		return "", fmt.Errorf("failed to sign access token: %w", err)
 	}
@@ -79,8 +84,9 @@ func (jwtService JwtService) SignAccessToken(email string) (string, error) {
 	return signed, nil
 }
 
-func (jwtService JwtService) SignRefreshToken(email string) (string, error) {
+func (s *JwtService) SignRefreshToken(email string) (string, error) {
 	now := time.Now()
+
 	claims := jwt.MapClaims{
 		"email": email,
 		"iat":   now.Unix(),
@@ -89,100 +95,145 @@ func (jwtService JwtService) SignRefreshToken(email string) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodES512, claims)
 
-	signed, err := token.SignedString(jwtService.refreshPrivateKey)
+	signed, err := token.SignedString(s.refreshPrivateKey)
 	if err != nil {
-		return "", fmt.Errorf("failed to sign access token: %w", err)
+		return "", fmt.Errorf("failed to sign refresh token: %w", err)
 	}
 
 	return signed, nil
 }
 
-func (jwtService JwtService) VerifyAccessToken(tokenString string) (string, error) {
-    token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
-        if token.Method != jwt.SigningMethodES512 {
-            return nil, fmt.Errorf("unexpected signing method: %v", token.Method.Alg())
-        }
+func (s *JwtService) VerifyAccessToken(
+	ctx context.Context,
+	tokenString string,
+) (string, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
+		if token.Method != jwt.SigningMethodES512 {
+			return nil, fmt.Errorf(
+				"unexpected signing method: %v",
+				token.Method.Alg(),
+			)
+		}
 
-        return &jwtService.accessPrivateKey.PublicKey, nil
-    })
+		return &s.accessPrivateKey.PublicKey, nil
+	})
 
-    if err != nil {
-        return "", fmt.Errorf("invalid refresh token: %w", err)
-    }
+	if err != nil {
+		return "", fmt.Errorf("invalid access token: %w", err)
+	}
 
-    if !token.Valid {
-        return "", fmt.Errorf("invalid refresh token")
-    }
+	if !token.Valid {
+		return "", fmt.Errorf("invalid access token")
+	}
 
-    claims, ok := token.Claims.(jwt.MapClaims)
-    if !ok {
-        return "", fmt.Errorf("invalid token claims")
-    }
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return "", fmt.Errorf("invalid token claims")
+	}
 
-    email, ok := claims["email"].(string)
-    if !ok || email == "" {
-        return "", fmt.Errorf("refresh token has no valid subject")
-    }
+	email, ok := claims["email"].(string)
+	if !ok || email == "" {
+		return "", fmt.Errorf("access token has no valid email")
+	}
 
-    return email, nil
+	return email, nil
 }
 
-func (jwtService JwtService) VerifyRefreshToken(tokenString string) (string, error) {
-    token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
-        if token.Method != jwt.SigningMethodES512 {
-            return nil, fmt.Errorf("unexpected signing method: %v", token.Method.Alg())
-        }
+func (s *JwtService) VerifyRefreshToken(
+	ctx context.Context,
+	tokenString string,
+) (string, error) {
+	dbToken, err := s.repository.GetRefreshToken(ctx, tokenString)
+	if err != nil {
+		return "", fmt.Errorf("refresh token not found: %w", err)
+	}
 
-        return &jwtService.refreshPrivateKey.PublicKey, nil
-    })
+	if !dbToken.Active {
+		return "", fmt.Errorf("refresh token is disabled")
+	}
 
-    if err != nil {
-        return "", fmt.Errorf("invalid refresh token: %w", err)
-    }
+	token, err := jwt.Parse(dbToken.Token, func(token *jwt.Token) (any, error) {
+		if token.Method != jwt.SigningMethodES512 {
+			return nil, fmt.Errorf(
+				"unexpected signing method: %v",
+				token.Method.Alg(),
+			)
+		}
 
-    if !token.Valid {
-        return "", fmt.Errorf("invalid refresh token")
-    }
+		return &s.refreshPrivateKey.PublicKey, nil
+	})
 
-    claims, ok := token.Claims.(jwt.MapClaims)
-    if !ok {
-        return "", fmt.Errorf("invalid token claims")
-    }
+	if err != nil {
+		return "", fmt.Errorf("invalid refresh token: %w", err)
+	}
 
-    email, ok := claims["email"].(string)
-    if !ok || email == "" {
-        return "", fmt.Errorf("refresh token has no valid subject")
-    }
+	if !token.Valid {
+		return "", fmt.Errorf("invalid refresh token")
+	}
 
-    return email, nil
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return "", fmt.Errorf("invalid token claims")
+	}
+
+	email, ok := claims["email"].(string)
+	if !ok || email == "" {
+		return "", fmt.Errorf("refresh token has no valid email")
+	}
+
+	return email, nil
 }
 
-func (jwtService JwtService) RefreshTokens(
-    refreshToken string,
+func (s *JwtService) RefreshTokens(
+	ctx context.Context,
+	refreshToken string,
 ) (JwtRefreshResponse, error) {
-    email, err := jwtService.VerifyRefreshToken(refreshToken)
-    if err != nil {
-        return JwtRefreshResponse{}, err
-    }
+	email, err := s.VerifyRefreshToken(ctx, refreshToken)
+	if err != nil {
+		return JwtRefreshResponse{}, err
+	}
 
-    accessToken, err := jwtService.SignAccessToken(email)
-    if err != nil {
-        return JwtRefreshResponse{}, fmt.Errorf(
-            "failed to create access token: %w",
-            err,
-        )
-    }
+	accessToken, err := s.SignAccessToken(email)
+	if err != nil {
+		return JwtRefreshResponse{}, fmt.Errorf(
+			"failed to create access token: %w",
+			err,
+		)
+	}
 
-    newRefreshToken, err := jwtService.SignRefreshToken(email)
-    if err != nil {
-        return JwtRefreshResponse{}, fmt.Errorf(
-            "failed to create refresh token: %w",
-            err,
-        )
-    }
+	newRefreshToken, err := s.SignRefreshToken(email)
+	if err != nil {
+		return JwtRefreshResponse{}, fmt.Errorf(
+			"failed to create refresh token: %w",
+			err,
+		)
+	}
 
-    return JwtRefreshResponse{
-        AccessToken:  accessToken,
-        RefreshToken: newRefreshToken,
-    }, nil
+	if err := s.repository.InsertRefreshToken(
+		ctx,
+		email,
+		newRefreshToken,
+	); err != nil {
+		return JwtRefreshResponse{}, fmt.Errorf(
+			"failed to register refresh token: %w",
+			err,
+		)
+	}
+
+	if err := s.repository.DisableRefreshToken(
+		ctx,
+		refreshToken,
+	); err != nil {
+		_ = s.repository.DisableRefreshToken(ctx, newRefreshToken)
+
+		return JwtRefreshResponse{}, fmt.Errorf(
+			"failed to disable old refresh token: %w",
+			err,
+		)
+	}
+
+	return JwtRefreshResponse{
+		AccessToken:  accessToken,
+		RefreshToken: newRefreshToken,
+	}, nil
 }

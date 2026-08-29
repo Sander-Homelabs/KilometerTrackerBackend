@@ -7,6 +7,7 @@ WHERE token = $1;
 INSERT INTO refresh_token (email, token, active)
 VALUES ($1, $2, true);
 
--- name: DeleteRefreshToken :exec
-DELETE FROM refresh_token
+-- name: DisableRefreshToken :exec
+UPDATE refresh_token
+SET active = false
 WHERE token = $1;

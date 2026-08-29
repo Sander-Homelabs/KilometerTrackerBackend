@@ -9,13 +9,14 @@ import (
 	"context"
 )
 
-const deleteRefreshToken = `-- name: DeleteRefreshToken :exec
-DELETE FROM refresh_token
+const disableRefreshToken = `-- name: DisableRefreshToken :exec
+UPDATE refresh_token
+SET active = false
 WHERE token = $1
 `
 
-func (q *Queries) DeleteRefreshToken(ctx context.Context, token string) error {
-	_, err := q.db.Exec(ctx, deleteRefreshToken, token)
+func (q *Queries) DisableRefreshToken(ctx context.Context, token string) error {
+	_, err := q.db.Exec(ctx, disableRefreshToken, token)
 	return err
 }
 
