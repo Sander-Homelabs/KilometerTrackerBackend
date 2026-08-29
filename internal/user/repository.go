@@ -1,11 +1,13 @@
 package user
 
-import "github.com/jackc/pgx/v5/pgxpool"
+import (
+	"goch.dev/kmtracker/internal/db"
+)
 
 type Repository struct {
-    db *pgxpool.Pool
+    db *db.Queries
 }
 
-func NewRepository(db *pgxpool.Pool) *Repository {
+func NewRepository(db *db.Queries) *Repository {
     return &Repository{db: db}
 }

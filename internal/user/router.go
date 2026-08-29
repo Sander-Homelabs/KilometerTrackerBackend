@@ -3,10 +3,10 @@ package user
 import (
 	"net/http"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	"goch.dev/kmtracker/internal/db"
 )
 
-func NewRouter(db *pgxpool.Pool) *http.ServeMux {
+func NewRouter(db *db.Queries) *http.ServeMux {
 	mux := http.NewServeMux()
 
 	repository := NewRepository(db)

@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 const (
@@ -18,7 +17,7 @@ const (
 )
 
 type JwtService struct {
-	db *pgxpool.Pool
+    repository *Repository
 	accessPrivateKey *ecdsa.PrivateKey
 	refreshPrivateKey *ecdsa.PrivateKey
 }
@@ -28,7 +27,7 @@ type JwtRefreshResponse struct {
 	RefreshToken string
 }
 
-func NewJwtService(db *pgxpool.Pool) (*JwtService, error) {
+func NewJwtService(repository *Repository) (*JwtService, error) {
 	accessKeyString := os.Getenv("ACCESS_TOKEN_KEY")
 	if accessKeyString == "" {
 		return nil, fmt.Errorf("ACCESS_TOKEN_KEY is not set")
@@ -59,7 +58,7 @@ func NewJwtService(db *pgxpool.Pool) (*JwtService, error) {
 		return nil, fmt.Errorf("failed to parse ECDSA private key: %w", err)
 	}
 
-	return &JwtService{db: db, accessPrivateKey: accessKey, refreshPrivateKey: refreshKey}, nil
+	return &JwtService{repository: repository, accessPrivateKey: accessKey, refreshPrivateKey: refreshKey}, nil
 }
 
 func (jwtService JwtService) SignAccessToken(email string) (string, error) {

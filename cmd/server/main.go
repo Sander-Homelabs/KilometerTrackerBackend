@@ -12,8 +12,10 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
+
 	"goch.dev/kmtracker/internal"
 	"goch.dev/kmtracker/internal/auth"
+	"goch.dev/kmtracker/internal/db"
 )
 
 func main() {
@@ -23,18 +25,22 @@ func main() {
 
 	ctx := context.Background()
 
-	db, err := newDBPool(ctx)
+	pool, err := newDBPool(ctx)
 	if err != nil {
 		log.Fatalf("could not initialize db pool: %v", err)
 	}
-	defer db.Close()
+	defer pool.Close()
 
-	jwtService, err := auth.NewJwtService(db)
+	queries := db.New(pool)
+
+	jwtRepository := auth.NewRepository(queries)
+
+	jwtService, err := auth.NewJwtService(jwtRepository)
 	if err != nil {
 		log.Fatalf("could not initialize jwt service: %v", err)
 	}
 
-	router := internal.Cors(internal.NewRouter(db, jwtService))
+	router := internal.Cors(internal.NewRouter(queries, jwtService))
 
 	server := &http.Server{
 		Addr: ":8080",
@@ -43,16 +49,23 @@ func main() {
 
 	go func() {
 		log.Println("listening on :8080")
-		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+
+		if err := server.ListenAndServe(); err != nil &&
+			!errors.Is(err, http.ErrServerClosed) {
 			log.Fatalf("server error: %v", err)
 		}
 	}()
 
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
+	defer signal.Stop(stop)
+
 	<-stop
 
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	shutdownCtx, cancel := context.WithTimeout(
+		context.Background(),
+		10*time.Second,
+	)
 	defer cancel()
 
 	if err := server.Shutdown(shutdownCtx); err != nil {
@@ -64,6 +77,7 @@ func withTimeout(next http.Handler, timeout time.Duration) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(r.Context(), timeout)
 		defer cancel()
+
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
@@ -89,12 +103,23 @@ func newDBPool(ctx context.Context) (*pgxpool.Pool, error) {
 			pingCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
 			lastErr = pool.Ping(pingCtx)
 			cancel()
+
 			if lastErr == nil {
 				return pool, nil
 			}
+
+			pool.Close()
 		}
-		log.Printf("db not ready, retrying in 2m (attempt %d/5): %v", i+1, lastErr)
-		time.Sleep(2 * time.Minute)
+
+		if i < 4 {
+			log.Printf(
+				"db not ready, retrying in 2m (attempt %d/5): %v",
+				i+1,
+				lastErr,
+			)
+
+			time.Sleep(2 * time.Minute)
+		}
 	}
 
 	return nil, lastErr
