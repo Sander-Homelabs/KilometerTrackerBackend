@@ -14,7 +14,7 @@ class EmailService {
             )
             is EmailRequest.InviteUser -> mapOf(
                 "admin" to request.admin,
-                "inviteCode" to request.inviteCode,
+                "inviteCode" to request.inviteCode.toString(),
                 "url" to request.url
             )
             is EmailRequest.TankRefillNotification -> mapOf(

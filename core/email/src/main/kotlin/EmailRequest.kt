@@ -15,7 +15,7 @@ sealed interface EmailRequest {
     data class InviteUser(
         override val recipientEmail: String,
         val admin: String,
-        val inviteCode: String,
+        val inviteCode: UUID,
         val url: String
     ) : EmailRequest {
         override val workflow = EmailWorkflow.INVITE_USER
