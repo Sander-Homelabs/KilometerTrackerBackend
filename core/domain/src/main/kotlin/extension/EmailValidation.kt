@@ -1,4 +1,4 @@
-package app.util.extension
+package extension
 
 fun String.isValidEmail(): Boolean {
     return Regex(

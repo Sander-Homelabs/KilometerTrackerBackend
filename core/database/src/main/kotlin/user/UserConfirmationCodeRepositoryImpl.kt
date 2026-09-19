@@ -1,7 +1,9 @@
 package database.user
 
 import UserConfirmationCodeRepository
+import model.UserConfirmationCode
 import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
@@ -10,16 +12,19 @@ import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransacti
 import java.util.UUID
 
 class UserConfirmationCodeRepositoryImpl(private val db: Database): UserConfirmationCodeRepository {
-    override suspend fun findByEmail(email: String): UUID? =
+    override suspend fun findByEmail(email: String): UserConfirmationCode? =
         newSuspendedTransaction(db = db) {
             UserConfirmationCodeTable.selectAll()
                 .where { UserConfirmationCodeTable.email eq email }
-                .map { it[UserConfirmationCodeTable.code] }
+                .map { it.toDomain() }
                 .singleOrNull()
         }
 
-    override suspend fun save(email: String, code: UUID) {
+    override suspend fun upsert(email: String, code: UUID) {
         newSuspendedTransaction(db = db) {
+            UserConfirmationCodeTable.deleteWhere {
+                UserConfirmationCodeTable.email eq email
+            }
             UserConfirmationCodeTable.insert {
                 it[UserConfirmationCodeTable.email] = email
                 it[UserConfirmationCodeTable.code] = code
@@ -34,4 +39,10 @@ class UserConfirmationCodeRepositoryImpl(private val db: Database): UserConfirma
             }
         }
     }
+
+    private fun ResultRow.toDomain(): UserConfirmationCode = UserConfirmationCode(
+        email = this[UserConfirmationCodeTable.email],
+        code = this[UserConfirmationCodeTable.code],
+        createdAt = this[UserConfirmationCodeTable.createdAt]
+    )
 }

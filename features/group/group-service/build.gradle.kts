@@ -4,4 +4,5 @@ plugins {
 
 dependencies {
     implementation(project(":features:group:group-domain"))
+    implementation(project(":core:domain"))
 }

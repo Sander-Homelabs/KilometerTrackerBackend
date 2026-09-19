@@ -5,4 +5,5 @@ plugins {
 dependencies {
     implementation(project(":features:trip:trip-domain"))
     implementation(project(":features:group:group-domain"))
+    implementation(project(":core:domain"))
 }
