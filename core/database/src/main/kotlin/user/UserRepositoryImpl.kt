@@ -18,7 +18,7 @@ class UserRepositoryImpl(private val db: Database): UserRepository {
     override suspend fun findByEmail(email: String): UserAccount? = dbQueryAs(email, db) {
         UsersTable.selectAll()
             .where { UsersTable.email eq email }
-            .map { it.toDomain()}
+            .map { it.toDomain() }
             .singleOrNull()
     }
 
