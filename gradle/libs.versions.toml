@@ -10,6 +10,7 @@ kotlinx-datetime = "0.6.1"
 kotlinx-serialization = "1.7.3"
 hikari = "6.2.1"
 dotenv = "6.4.1"
+knock = "1.0.0"
 
 [libraries]
 # Kotlin (for build-logic)
@@ -56,6 +57,9 @@ hikari = { module = "com.zaxxer:HikariCP", version.ref = "hikari" }
 
 #DotEnv
 dotenv-kotlin = { module = "io.github.cdimascio:dotenv-kotlin", version.ref = "dotenv" }
+
+#Knock
+knock = { module = "app.knock.api:knock-java", version.ref = "knock"}
 
 [bundles]
 ktor-server = [
