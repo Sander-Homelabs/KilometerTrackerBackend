@@ -25,6 +25,10 @@ class EmailService {
                 "tanker" to request.tanker,
                 "totalCost" to request.totalCost,
             )
+            is EmailRequest.RegisterUser -> mapOf(
+                "activation-code" to request.activationCode,
+                "url" to request.url,
+            )
         }
 
         val workflowData = data.entries.fold(WorkflowTriggerParams.Data.builder()) { builder, (key, value) ->

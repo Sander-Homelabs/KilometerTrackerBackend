@@ -8,7 +8,7 @@ import java.util.UUID
 class RegisterUserUseCase(
     private val userConfirmationCodeRepo: UserConfirmationCodeRepository,
     private val userRepo: UserRepository,
-//    private val emailService: EmailService,
+    private val emailService: EmailService,
 ) {
     suspend operator fun invoke(email: String) {
         if (!email.isValidEmail()) throw InvalidEmail()
@@ -22,6 +22,10 @@ class RegisterUserUseCase(
         val code = UUID.randomUUID()
         userConfirmationCodeRepo.upsert(email, code)
 
-//        emailService.sendConfirmationCode(email, code)
+        emailService.sendEmail(EmailRequest.RegisterUser(
+            recipientEmail = email,
+            activationCode = code,
+            url = "https://kmtracker.goch.dev/activate/$code"
+        ))
     }
 }

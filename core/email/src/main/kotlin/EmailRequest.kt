@@ -32,6 +32,14 @@ sealed interface EmailRequest {
     ) : EmailRequest {
         override val workflow = EmailWorkflow.TANK_REFILL_NOTIFICATION
     }
+
+    data class RegisterUser(
+        override val recipientEmail: String,
+        val activationCode: UUID,
+        val url: String
+    ) : EmailRequest {
+        override val workflow = EmailWorkflow.REGISTER_USER
+    }
 }
 
 data class TankRefillCosts(val cost: Int, val user: String)
