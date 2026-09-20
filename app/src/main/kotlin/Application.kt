@@ -1,5 +1,6 @@
 package app
 
+import ActivateUserUseCase
 import RegisterUserUseCase
 import database.di.databaseModule
 import di.emailModule
@@ -34,6 +35,6 @@ fun Application.module() {
     }
 
     routing {
-        userRoutes(get<RegisterUserUseCase>())
+        userRoutes(register = get<RegisterUserUseCase>(), activate = get<ActivateUserUseCase>())
     }
 }
