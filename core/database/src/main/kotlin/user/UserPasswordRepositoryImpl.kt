@@ -16,6 +16,9 @@ class UserPasswordRepositoryImpl(private val db: Database): UserPasswordReposito
             .map { it.toDomain() }
     }
 
+    override suspend fun findActiveByEmail(email: String): Password? =
+        findByEmail(email).find { it.active }
+
     override suspend fun save(password: String, email: String) {
         dbQueryAs(email, db) {
             UserPasswordTable.insert {
