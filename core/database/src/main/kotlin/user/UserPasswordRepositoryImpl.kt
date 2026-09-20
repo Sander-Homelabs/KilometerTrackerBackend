@@ -2,17 +2,18 @@ package database.user
 
 import UserPasswordRepository
 import database.dbQueryAs
+import model.Password
 import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.update
 
 class UserPasswordRepositoryImpl(private val db: Database): UserPasswordRepository {
-    override suspend fun findByEmail(email: String): String? = dbQueryAs(email, db) {
+    override suspend fun findByEmail(email: String): List<Password> = dbQueryAs(email, db) {
         UserPasswordTable.selectAll()
             .where { UserPasswordTable.email eq email }
-            .map { it[UserPasswordTable.email] }
-            .singleOrNull()
+            .map { it.toDomain() }
     }
 
     override suspend fun save(password: String, email: String) {
@@ -31,4 +32,10 @@ class UserPasswordRepositoryImpl(private val db: Database): UserPasswordReposito
             }
         }
     }
+
+    private fun ResultRow.toDomain() = Password(
+        this[UserPasswordTable.email],
+        this[UserPasswordTable.password],
+        this[UserPasswordTable.active]
+    )
 }
