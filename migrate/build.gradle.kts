@@ -10,6 +10,7 @@ application {
 dependencies {
     implementation(project(":core:database"))
     implementation(project(":core:common"))
+
     implementation(libs.flyway.core)
     implementation(libs.flyway.postgres)
     implementation(libs.postgresql)
@@ -19,19 +20,7 @@ dependencies {
 }
 
 tasks.named<JavaExec>("run") {
-    workingDir = rootProject.projectDir
-
-    val envFile = rootProject.file(".env")
-    if (envFile.exists()) {
-        envFile.readLines()
-            .filter { it.isNotBlank() && !it.trimStart().startsWith("#") && it.contains("=") }
-            .forEach { line ->
-                val idx = line.indexOf("=")
-                val key = line.substring(0, idx).trim()
-                val value = line.substring(idx + 1).trim()
-                environment(key, value)
-            }
-    }
+    loadEnvFile(project)
 }
 
 tasks.named<Jar>("jar") {

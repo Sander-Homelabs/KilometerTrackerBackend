@@ -1,5 +1,10 @@
 plugins {
     id("ktor-app")
+    application
+}
+
+application {
+    mainClass.set("app.ApplicationKt")
 }
 
 dependencies {
@@ -23,4 +28,8 @@ dependencies {
     implementation(libs.koin.logger.slf4j)
     implementation(libs.logback.classic)
     implementation(libs.hikari)
+}
+
+tasks.named<JavaExec>("run") {
+    loadEnvFile(project)
 }
