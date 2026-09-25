@@ -4,6 +4,7 @@ import ActivateUserUseCase
 import RegisterUserUseCase
 import database.di.databaseModule
 import di.emailModule
+import di.securityModule
 import di.userServiceModule
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -27,7 +28,7 @@ fun Application.module() {
 
     install(Koin) {
         slf4jLogger()
-        modules(databaseModule, emailModule, userServiceModule)
+        modules(databaseModule, emailModule, securityModule, userServiceModule)
     }
 
     install(ContentNegotiation) {
