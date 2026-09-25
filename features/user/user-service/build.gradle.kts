@@ -11,4 +11,5 @@ dependencies {
 
     implementation(libs.koin.ktor)
     implementation(libs.koin.logger.slf4j)
+    implementation(libs.kotlinx.datetime)
 }

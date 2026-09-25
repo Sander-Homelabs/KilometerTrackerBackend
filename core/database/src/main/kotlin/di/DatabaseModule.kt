@@ -8,6 +8,8 @@ import database.user.UserRepositoryImpl
 import database.user.UserConfirmationCodeRepositoryImpl
 import UserRepository
 import UserConfirmationCodeRepository
+import UserPasswordRepository
+import database.user.UserPasswordRepositoryImpl
 import java.net.URI
 
 val databaseModule = module {
@@ -35,5 +37,6 @@ val databaseModule = module {
     }
 
     single<UserRepository> { UserRepositoryImpl(get()) }
+    single<UserPasswordRepository> { UserPasswordRepositoryImpl(get()) }
     single<UserConfirmationCodeRepository> { UserConfirmationCodeRepositoryImpl(get()) }
 }

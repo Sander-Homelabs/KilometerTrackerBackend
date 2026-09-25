@@ -7,6 +7,7 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
+import java.util.UUID
 
 fun Route.userRoutes(register: RegisterUserUseCase, activate: ActivateUserUseCase) {
     route("/user") {
@@ -22,7 +23,7 @@ fun Route.userRoutes(register: RegisterUserUseCase, activate: ActivateUserUseCas
                 ActivateUserCommand(
                     email = request.email,
                     password = request.password,
-                    confirmationCode = request.confirmationCode,
+                    confirmationCode = UUID.fromString(request.confirmationCode),
                     firstName = request.firstName,
                     lastName = request.lastName
                 )
