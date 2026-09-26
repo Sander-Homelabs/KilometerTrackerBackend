@@ -1,4 +1,4 @@
-package database.security
+package database.user
 
 import UserPasswordRepository
 import database.dbQueryAs

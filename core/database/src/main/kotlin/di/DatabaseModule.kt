@@ -6,7 +6,7 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import database.user.UserRepositoryImpl
 import database.user.UserConfirmationCodeRepositoryImpl
-import database.security.UserPasswordRepositoryImpl
+import database.user.UserPasswordRepositoryImpl
 import UserRepository
 import UserConfirmationCodeRepository
 import UserPasswordRepository
