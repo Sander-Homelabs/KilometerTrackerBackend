@@ -1,7 +1,10 @@
 package app
 
 import ActivateUserUseCase
+import LoginUseCase
+import RefreshAccessTokenUseCase
 import RegisterUserUseCase
+import authRoutes
 import database.di.databaseModule
 import di.emailModule
 import di.securityModule
@@ -37,5 +40,6 @@ fun Application.module() {
 
     routing {
         userRoutes(register = get<RegisterUserUseCase>(), activate = get<ActivateUserUseCase>())
+        authRoutes(login = get<LoginUseCase>(), refresh = get<RefreshAccessTokenUseCase>())
     }
 }

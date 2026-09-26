@@ -1,9 +1,16 @@
 package plugins
 
+import exception.AccessTokenExpired
 import exception.DuplicateUser
+import exception.IncorrectPassword
+import exception.InvalidAccessToken
 import exception.InvalidEmail
 import exception.InvalidPassword
+import exception.InvalidRefreshToken
 import exception.InvalidUser
+import exception.MissingRefreshToken
+import exception.NoActiveRefreshToken
+import exception.RefreshTokenExpired
 import exception.UserAlreadyActive
 import exception.UserConfirmationCodeExpired
 import exception.UserConfirmationCodeNotFound
@@ -42,6 +49,27 @@ fun Application.configureErrorHandling() {
         }
         exception<InvalidUser> { call, cause ->
             call.respond(HttpStatusCode.BadRequest, ErrorResponse("INVALID_USER", cause.message ?: "Invalid user"))
+        }
+        exception<IncorrectPassword> { call, cause ->
+            call.respond(HttpStatusCode.BadRequest, ErrorResponse("INCORRECT_PASSWORD", cause.message ?: "Incorrect password"))
+        }
+        exception<AccessTokenExpired> { call, cause ->
+            call.respond(HttpStatusCode.Gone, ErrorResponse("ACCESS_TOKEN_EXPIRED", cause.message ?: "Access token expired"))
+        }
+        exception<InvalidAccessToken> { call, cause ->
+            call.respond(HttpStatusCode.BadRequest, ErrorResponse("INVALID_ACCESS_TOKEN", cause.message ?: "Invalid access token"))
+        }
+        exception<RefreshTokenExpired> { call, cause ->
+            call.respond(HttpStatusCode.Gone, ErrorResponse("REFRESH_TOKEN_EXPIRED", cause.message ?: "Refresh token expired"))
+        }
+        exception<InvalidRefreshToken> { call, cause ->
+            call.respond(HttpStatusCode.BadRequest, ErrorResponse("INVALID_REFRESH_TOKEN", cause.message ?: "Invalid refresh token"))
+        }
+        exception<NoActiveRefreshToken> { call, cause ->
+            call.respond(HttpStatusCode.Gone, ErrorResponse("NO_ACTIVE_REFRESH_TOKEN", cause.message ?: "No active refresh token"))
+        }
+        exception<MissingRefreshToken> { call, cause ->
+            call.respond(HttpStatusCode.NotFound, ErrorResponse("MISSING_REFRESH_TOKEN", cause.message ?: "Missing refresh token"))
         }
         exception<Throwable> { call, cause ->
             call.application.log.error("Unhandled exception", cause)
