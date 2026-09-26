@@ -6,10 +6,10 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import database.user.UserRepositoryImpl
 import database.user.UserConfirmationCodeRepositoryImpl
+import database.security.UserPasswordRepositoryImpl
 import UserRepository
 import UserConfirmationCodeRepository
 import UserPasswordRepository
-import database.user.UserPasswordRepositoryImpl
 import java.net.URI
 
 val databaseModule = module {

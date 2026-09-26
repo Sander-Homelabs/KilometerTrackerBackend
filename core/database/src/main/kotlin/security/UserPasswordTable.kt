@@ -1,5 +1,6 @@
-package database.user
+package database.security
 
+import database.user.UsersTable
 import org.jetbrains.exposed.sql.Table
 
 object UserPasswordTable: Table("user_password") {
