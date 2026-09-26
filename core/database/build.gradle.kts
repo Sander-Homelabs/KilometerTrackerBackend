@@ -5,6 +5,7 @@ plugins {
 dependencies {
     implementation(project(":core:domain"))
     implementation(project(":core:common"))
+    implementation(project(":core:security"))
     implementation(project(":features:group:group-domain"))
     implementation(project(":features:user:user-domain"))
     implementation(project(":features:trip:trip-domain"))
