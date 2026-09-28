@@ -8,6 +8,7 @@ import exception.InvalidEmail
 import exception.InvalidPassword
 import exception.InvalidRefreshToken
 import exception.InvalidUser
+import exception.MissingAccessToken
 import exception.MissingRefreshToken
 import exception.NoActiveRefreshToken
 import exception.RefreshTokenExpired
@@ -18,6 +19,7 @@ import exception.UserNotFound
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.statuspages.*
+import io.ktor.server.request.ContentTransformationException
 import io.ktor.server.response.*
 import kotlinx.serialization.Serializable
 
@@ -70,6 +72,12 @@ fun Application.configureErrorHandling() {
         }
         exception<MissingRefreshToken> { call, cause ->
             call.respond(HttpStatusCode.NotFound, ErrorResponse("MISSING_REFRESH_TOKEN", cause.message ?: "Missing refresh token"))
+        }
+        exception<MissingAccessToken> { call, cause ->
+            call.respond(HttpStatusCode.Unauthorized, ErrorResponse("MISSING_ACCESS_TOKEN", cause.message ?: "Missing access token"))
+        }
+        exception<ContentTransformationException> { call, _ ->
+            call.respond(HttpStatusCode.BadRequest, ErrorResponse("MALFORMED_REQUEST_BODY", "Failed to convert request body"))
         }
         exception<Throwable> { call, cause ->
             call.application.log.error("Unhandled exception", cause)
