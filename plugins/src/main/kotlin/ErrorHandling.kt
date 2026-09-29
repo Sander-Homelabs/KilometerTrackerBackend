@@ -12,6 +12,7 @@ import exception.MissingAccessToken
 import exception.MissingRefreshToken
 import exception.NoActiveRefreshToken
 import exception.RefreshTokenExpired
+import exception.Unauthorized
 import exception.UserAlreadyActive
 import exception.UserConfirmationCodeExpired
 import exception.UserConfirmationCodeNotFound
@@ -75,6 +76,9 @@ fun Application.configureErrorHandling() {
         }
         exception<MissingAccessToken> { call, cause ->
             call.respond(HttpStatusCode.Unauthorized, ErrorResponse("MISSING_ACCESS_TOKEN", cause.message ?: "Missing access token"))
+        }
+        exception<Unauthorized> { call, cause ->
+            call.respond(HttpStatusCode.Unauthorized, ErrorResponse("UNAUTHORIZED", cause.message ?: "Unauthorized"))
         }
         exception<ContentTransformationException> { call, _ ->
             call.respond(HttpStatusCode.BadRequest, ErrorResponse("MALFORMED_REQUEST_BODY", "Failed to convert request body"))
