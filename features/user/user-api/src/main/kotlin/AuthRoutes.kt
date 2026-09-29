@@ -1,6 +1,7 @@
 import dto.LoginRequest
 import dto.LoginResponse
 import dto.RefreshAccessTokenRequest
+import dto.RegisterResponse
 import exception.MissingRefreshToken
 import io.ktor.http.Cookie
 import io.ktor.http.HttpStatusCode
@@ -68,7 +69,7 @@ fun Route.authRoutes(login: LoginUseCase, refresh: RefreshAccessTokenUseCase) {
                     httpOnly = true,
                 )
             )
-            call.respond(HttpStatusCode.OK, LoginResponse(tokenPair.accessToken, tokenPair.refreshToken))
+            call.respond(HttpStatusCode.OK, RegisterResponse(tokenPair.accessToken, tokenPair.refreshToken))
         }
     }
 }
