@@ -1,20 +1,21 @@
 import exception.MissingAccessToken
-import io.ktor.server.application.ApplicationCall
+import exception.Unauthorized
 import io.ktor.server.application.createRouteScopedPlugin
-import io.ktor.util.AttributeKey
+import model.UserRole
 import org.koin.java.KoinJavaComponent.inject
 
-val userPrincipalKey = AttributeKey<UserPrincipal>("UserPrincipal")
+class RequireRoleParams {
+    var role: List<UserRole> = listOf(UserRole.USER)
+}
 
-val Authenticate = createRouteScopedPlugin("Authenticate") {
+val RequireRole = createRouteScopedPlugin("RequireRole", ::RequireRoleParams) {
     onCall { call ->
         val token = call.request.headers["Authorization"] ?: call.request.cookies["Authorization"] ?: throw MissingAccessToken()
 
         val tokenService: TokenService by inject(TokenService::class.java)
 
         val userPrincipal = tokenService.verify(token)
-        call.attributes.put(userPrincipalKey, userPrincipal)
+
+        if (pluginConfig.role.none { it == userPrincipal.role }) throw Unauthorized()
     }
 }
-
-fun ApplicationCall.getUserPrincipal(): UserPrincipal? = attributes.getOrNull(userPrincipalKey)
