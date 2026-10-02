@@ -1,5 +1,5 @@
 import exception.MissingAccessToken
-import exception.Unauthorized
+import exception.Forbidden
 import io.ktor.server.application.createRouteScopedPlugin
 import model.UserRole
 import org.koin.java.KoinJavaComponent.inject
@@ -16,6 +16,6 @@ val RequireRole = createRouteScopedPlugin("RequireRole", ::RequireRoleParams) {
 
         val userPrincipal = tokenService.verify(token)
 
-        if (pluginConfig.role.none { it == userPrincipal.role }) throw Unauthorized()
+        if (pluginConfig.role.none { it == userPrincipal.role }) throw Forbidden()
     }
 }
