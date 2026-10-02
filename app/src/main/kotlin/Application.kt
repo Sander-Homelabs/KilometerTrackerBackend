@@ -1,6 +1,7 @@
 package app
 
 import ActivateUserUseCase
+import AddGroupUserUseCase
 import AdminCreateGroupUseCase
 import LoginUseCase
 import RefreshAccessTokenUseCase
@@ -44,6 +45,6 @@ fun Application.module() {
     routing {
         userRoutes(register = get<RegisterUserUseCase>(), activate = get<ActivateUserUseCase>())
         authRoutes(login = get<LoginUseCase>(), refresh = get<RefreshAccessTokenUseCase>())
-        groupRoutes(adminCreate = get<AdminCreateGroupUseCase>())
+        groupRoutes(adminCreate = get<AdminCreateGroupUseCase>(), addGroupUser = get<AddGroupUserUseCase>())
     }
 }

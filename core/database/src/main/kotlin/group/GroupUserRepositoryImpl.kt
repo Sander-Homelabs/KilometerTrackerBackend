@@ -7,9 +7,17 @@ import model.GroupUser
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.selectAll
 import java.util.UUID
 
 class GroupUserRepositoryImpl(private val db: Database) : GroupUserRepository {
+    override suspend fun findByGroupId(groupId: UUID, email: String): List<GroupUser> =
+        dbQueryAs(email, db) {
+            GroupUserTable.selectAll()
+                .where { GroupUserTable.groupId eq groupId }
+                .map { it.toDomain() }
+        }
+
     override suspend fun save(email: String, groupId: UUID, userEmail: String, role: GroupRole): GroupUser? =
         dbQueryAs(email, db) {
             GroupUserTable.insert {
