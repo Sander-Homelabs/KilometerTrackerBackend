@@ -8,6 +8,7 @@ class AddGroupUserUseCase(
     private val userRepo: UserRepository,
     private val userConfirmationCodeRepo: UserConfirmationCodeRepository,
     private val groupUserRepo: GroupUserRepository,
+    private val groupRepo: GroupRepository,
     private val emailService: EmailService
 ) {
     suspend operator fun invoke(admin: String, groupId: UUID, userEmail: String) {
@@ -31,5 +32,14 @@ class AddGroupUserUseCase(
             }
         }
         groupUserRepo.save(admin, groupId, userEmail)
+        val group = groupRepo.findById(groupId, admin) ?: return
+        when (user) {
+            is UserAccount -> emailService.sendEmail(EmailRequest.UserAdded(
+                recipientEmail = userEmail,
+                group = group.name,
+                admin = admin
+            ))
+            else -> Unit
+        }
     }
 }

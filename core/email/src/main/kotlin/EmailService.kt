@@ -17,6 +17,10 @@ class EmailService {
                 "inviteCode" to request.inviteCode.toString(),
                 "url" to request.url
             )
+            is EmailRequest.UserAdded -> mapOf(
+                "admin" to request.admin,
+                "group" to request.group,
+            )
             is EmailRequest.TankRefillNotification -> mapOf(
                 "costPerKilometer" to request.costPerKilometer,
                 "costs" to request.costs,

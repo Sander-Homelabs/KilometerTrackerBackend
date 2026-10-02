@@ -20,6 +20,7 @@ import exception.UserConfirmationCodeNotFound
 import exception.UserNotFound
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.plugins.BadRequestException
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.request.ContentTransformationException
 import io.ktor.server.response.*
@@ -83,6 +84,9 @@ fun Application.configureErrorHandling() {
         }
         exception<ContentTransformationException> { call, _ ->
             call.respond(HttpStatusCode.BadRequest, ErrorResponse("MALFORMED_REQUEST_BODY", "Failed to convert request body"))
+        }
+        exception<BadRequestException> { call, _ ->
+            call.respond(HttpStatusCode.BadRequest, ErrorResponse("INVALID_REQUEST_BODY", "Bad request"))
         }
         exception<DatabaseError> { call, cause ->
             call.respond(HttpStatusCode.InternalServerError, ErrorResponse("DATABASE_ERROR", cause.message ?: "Database error"))

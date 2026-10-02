@@ -21,6 +21,14 @@ sealed interface EmailRequest {
         override val workflow = EmailWorkflow.INVITE_USER
     }
 
+    data class UserAdded(
+        override val recipientEmail: String,
+        val group: String,
+        val admin: String,
+    ) : EmailRequest {
+        override val workflow = EmailWorkflow.USER_ADDED
+    }
+
     data class TankRefillNotification(
         override val recipientEmail: String,
         val costPerKilometer: Int,
