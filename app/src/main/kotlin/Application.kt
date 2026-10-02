@@ -1,14 +1,17 @@
 package app
 
 import ActivateUserUseCase
+import AdminCreateGroupUseCase
 import LoginUseCase
 import RefreshAccessTokenUseCase
 import RegisterUserUseCase
 import authRoutes
 import database.di.databaseModule
 import di.emailModule
+import di.groupServiceModule
 import di.securityModule
 import di.userServiceModule
+import groupRoutes
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
@@ -31,7 +34,7 @@ fun Application.module() {
 
     install(Koin) {
         slf4jLogger()
-        modules(databaseModule, emailModule, securityModule, userServiceModule)
+        modules(databaseModule, emailModule, securityModule, userServiceModule, groupServiceModule)
     }
 
     install(ContentNegotiation) {
@@ -41,5 +44,6 @@ fun Application.module() {
     routing {
         userRoutes(register = get<RegisterUserUseCase>(), activate = get<ActivateUserUseCase>())
         authRoutes(login = get<LoginUseCase>(), refresh = get<RefreshAccessTokenUseCase>())
+        groupRoutes(adminCreate = get<AdminCreateGroupUseCase>())
     }
 }

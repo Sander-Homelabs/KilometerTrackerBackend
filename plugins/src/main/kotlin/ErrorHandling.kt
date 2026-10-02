@@ -1,6 +1,7 @@
 package plugins
 
 import exception.AccessTokenExpired
+import exception.DatabaseError
 import exception.DuplicateUser
 import exception.IncorrectPassword
 import exception.InvalidAccessToken
@@ -82,6 +83,9 @@ fun Application.configureErrorHandling() {
         }
         exception<ContentTransformationException> { call, _ ->
             call.respond(HttpStatusCode.BadRequest, ErrorResponse("MALFORMED_REQUEST_BODY", "Failed to convert request body"))
+        }
+        exception<DatabaseError> { call, cause ->
+            call.respond(HttpStatusCode.InternalServerError, ErrorResponse("DATABASE_ERROR", cause.message ?: "Database error"))
         }
         exception<Throwable> { call, cause ->
             call.application.log.error("Unhandled exception", cause)

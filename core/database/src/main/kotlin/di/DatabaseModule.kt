@@ -1,5 +1,6 @@
 package database.di
 
+import GroupRepository
 import RefreshTokenRepository
 import org.koin.dsl.module
 import org.jetbrains.exposed.sql.Database
@@ -11,7 +12,10 @@ import database.user.UserPasswordRepositoryImpl
 import UserRepository
 import UserConfirmationCodeRepository
 import UserPasswordRepository
+import database.group.GroupRepositoryImpl
+import database.group.GroupUserRepositoryImpl
 import database.user.RefreshTokenRepositoryImpl
+import GroupUserRepository
 import java.net.URI
 
 val databaseModule = module {
@@ -42,4 +46,6 @@ val databaseModule = module {
     single<UserPasswordRepository> { UserPasswordRepositoryImpl(get()) }
     single<UserConfirmationCodeRepository> { UserConfirmationCodeRepositoryImpl(get()) }
     single<RefreshTokenRepository> { RefreshTokenRepositoryImpl(get()) }
+    single<GroupRepository> { GroupRepositoryImpl(get()) }
+    single<GroupUserRepository> { GroupUserRepositoryImpl(get()) }
 }

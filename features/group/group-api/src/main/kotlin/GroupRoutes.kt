@@ -1,4 +1,5 @@
 import dto.CreateGroupAdminRequest
+import dto.CreateGroupAdminResponse
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
@@ -19,11 +20,11 @@ fun Route.groupRoutes(adminCreate: AdminCreateGroupUseCase) {
             install(RequireRole) { listOf(UserRole.ADMIN) }
 
             post {
-                call.receive<CreateGroupAdminRequest>()
-                val group = adminCreate()
-                call.respond(HttpStatusCode.Created, CreateGroupAdminRequest(
-                    groupId = group.id.toString(),
-                    groupName = group.name,
+                val request = call.receive<CreateGroupAdminRequest>()
+                val group = adminCreate(request.groupName, request.groupAdmin)
+                call.respond(HttpStatusCode.Created, CreateGroupAdminResponse(
+                    id = group.id.toString(),
+                    name = group.name,
                     createdBy = group.createdBy
                 ))
             }
