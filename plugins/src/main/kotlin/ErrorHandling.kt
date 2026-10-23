@@ -14,6 +14,8 @@ import exception.MissingRefreshToken
 import exception.NoActiveRefreshToken
 import exception.RefreshTokenExpired
 import exception.Forbidden
+import exception.InvalidTripStart
+import exception.Unauthenticated
 import exception.UserAlreadyActive
 import exception.UserConfirmationCodeExpired
 import exception.UserConfirmationCodeNotFound
@@ -58,6 +60,9 @@ fun Application.configureErrorHandling() {
         exception<IncorrectPassword> { call, cause ->
             call.respond(HttpStatusCode.BadRequest, ErrorResponse("INCORRECT_PASSWORD", cause.message ?: "Incorrect password"))
         }
+        exception<InvalidTripStart> { call, cause ->
+            call.respond(HttpStatusCode.BadRequest, ErrorResponse("INVALID_TRIP_START", cause.message ?: "Invalid trip start"))
+        }
         exception<AccessTokenExpired> { call, cause ->
             call.respond(HttpStatusCode.Gone, ErrorResponse("ACCESS_TOKEN_EXPIRED", cause.message ?: "Access token expired"))
         }
@@ -81,6 +86,9 @@ fun Application.configureErrorHandling() {
         }
         exception<Forbidden> { call, cause ->
             call.respond(HttpStatusCode.Forbidden, ErrorResponse("FORBIDDEN", cause.message ?: "Forbidden"))
+        }
+        exception<Unauthenticated> { call, cause ->
+            call.respond(HttpStatusCode.Unauthorized, ErrorResponse("UNAUTHENTICATED", cause.message ?: "Unauthenticated"))
         }
         exception<ContentTransformationException> { call, _ ->
             call.respond(HttpStatusCode.BadRequest, ErrorResponse("MALFORMED_REQUEST_BODY", "Failed to convert request body"))
