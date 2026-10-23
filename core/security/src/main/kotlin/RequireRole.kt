@@ -16,6 +16,8 @@ val RequireRole = createRouteScopedPlugin("RequireRole", ::RequireRoleParams) {
 
         val userPrincipal = tokenService.verify(token)
 
+        if (userPrincipal.role == UserRole.ADMIN) return@onCall
+
         if (pluginConfig.role.none { it == userPrincipal.role }) throw Forbidden()
     }
 }
