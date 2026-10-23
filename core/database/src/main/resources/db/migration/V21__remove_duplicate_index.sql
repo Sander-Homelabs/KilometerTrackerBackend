@@ -1,0 +1,1 @@
+DROP INDEX kilometer_tracker.idx_trips_group_id;

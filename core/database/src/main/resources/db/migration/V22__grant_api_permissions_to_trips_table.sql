@@ -1,0 +1,1 @@
+GRANT SELECT, DELETE, INSERT ON kilometer_tracker.trips TO api;
