@@ -4,5 +4,5 @@ import RegisterTripUseCase
 import org.koin.dsl.module
 
 val tripServiceModule = module {
-    single<RegisterTripUseCase> { RegisterTripUseCase() }
+    single<RegisterTripUseCase> { RegisterTripUseCase(get()) }
 }

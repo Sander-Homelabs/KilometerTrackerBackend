@@ -1,5 +1,18 @@
-class RegisterTripUseCase {
-    suspend operator fun invoke() {
+import command.RegisterTripCommand
+import exception.DatabaseError
+import exception.InvalidTripStart
+import model.Trip
 
+class RegisterTripUseCase(private val tripRepo: TripRepository) {
+    suspend operator fun invoke(command: RegisterTripCommand) {
+        if (command.start > command.end) throw InvalidTripStart()
+
+        val previousTrip = tripRepo.findByGroup(command.groupId, command.registeredBy).firstOrNull()
+        if (command.start != (previousTrip?.end ?: 0)) throw InvalidTripStart()
+
+        val domainTrip = Trip(command.groupId, command.start, command.end, command.email)
+        tripRepo.save(domainTrip, command.registeredBy) ?: throw DatabaseError()
+
+        //TODO implement saving (and sending email about) fuel refills
     }
 }
