@@ -5,12 +5,14 @@ import AddGroupUserUseCase
 import AdminCreateGroupUseCase
 import LoginUseCase
 import RefreshAccessTokenUseCase
+import RegisterTripUseCase
 import RegisterUserUseCase
 import authRoutes
 import database.di.databaseModule
 import di.emailModule
 import di.groupServiceModule
 import di.securityModule
+import di.tripServiceModule
 import di.userServiceModule
 import groupRoutes
 import io.ktor.serialization.kotlinx.json.*
@@ -23,6 +25,7 @@ import org.koin.ktor.ext.get
 import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
 import plugins.configureErrorHandling
+import tripRoutes
 import userRoutes
 
 fun main() {
@@ -35,7 +38,7 @@ fun Application.module() {
 
     install(Koin) {
         slf4jLogger()
-        modules(databaseModule, emailModule, securityModule, userServiceModule, groupServiceModule)
+        modules(databaseModule, emailModule, securityModule, userServiceModule, groupServiceModule, tripServiceModule)
     }
 
     install(ContentNegotiation) {
@@ -46,5 +49,6 @@ fun Application.module() {
         userRoutes(register = get<RegisterUserUseCase>(), activate = get<ActivateUserUseCase>())
         authRoutes(login = get<LoginUseCase>(), refresh = get<RefreshAccessTokenUseCase>())
         groupRoutes(adminCreate = get<AdminCreateGroupUseCase>(), addGroupUser = get<AddGroupUserUseCase>())
+        tripRoutes(registerTrip = get<RegisterTripUseCase>())
     }
 }
