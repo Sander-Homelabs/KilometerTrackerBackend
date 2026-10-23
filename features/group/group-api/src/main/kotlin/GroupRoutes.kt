@@ -16,7 +16,7 @@ fun Route.groupRoutes(adminCreate: AdminCreateGroupUseCase, addGroupUser: AddGro
         install(RequireRole) { listOf(UserRole.USER) }
 
         post {
-
+            call.respond(HttpStatusCode.NotImplemented, "Users cannot yet create their own groups")
         }
 
         route("/user") {
