@@ -33,6 +33,9 @@ class TripRepositoryImpl(private val db: Database): TripRepository {
                 ?.toDomain()
         }
 
+    override suspend fun findLastByGroup(groupId: UUID, user: String): Trip? =
+        findByGroup(groupId, user).firstOrNull()
+
     override suspend fun save(trip: Trip, user: String): Trip? =
         dbQueryAs(user, db) {
             TripsTable.insertReturning {

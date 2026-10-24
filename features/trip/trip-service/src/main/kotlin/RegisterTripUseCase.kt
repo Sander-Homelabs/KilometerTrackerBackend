@@ -7,7 +7,7 @@ class RegisterTripUseCase(private val tripRepo: TripRepository) {
     suspend operator fun invoke(command: RegisterTripCommand) {
         if (command.start > command.end) throw InvalidTripStart()
 
-        val previousTrip = tripRepo.findByGroup(command.groupId, command.registeredBy).firstOrNull()
+        val previousTrip = tripRepo.findLastByGroup(command.groupId, command.registeredBy)
         if (command.start != (previousTrip?.end ?: 0)) throw InvalidTripStart()
 
         val domainTrip = Trip(command.groupId, command.start, command.end, command.email)
