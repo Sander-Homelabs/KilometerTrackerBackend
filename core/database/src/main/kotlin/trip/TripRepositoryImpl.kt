@@ -33,6 +33,14 @@ class TripRepositoryImpl(private val db: Database): TripRepository {
                 ?.toDomain()
         }
 
+    override suspend fun findFromStart(groupId: UUID, start: Int, user: String): List<Trip> =
+        dbQueryAs(user, db) {
+            TripsTable
+                .selectAll()
+                .where { (TripsTable.groupId eq groupId) and (TripsTable.start greaterEq start) }
+                .map{ it.toDomain() }
+        }
+
     override suspend fun findLastByGroup(groupId: UUID, user: String): Trip? =
         findByGroup(groupId, user).firstOrNull()
 

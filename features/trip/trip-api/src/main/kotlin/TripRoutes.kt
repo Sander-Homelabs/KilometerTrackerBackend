@@ -32,7 +32,6 @@ fun Route.tripRoutes(registerTrip: RegisterTripUseCase, registerTankRefill: Regi
                 registerTankRefill(
                     RegisterTankRefillCommand(
                         groupId = UUID.fromString(request.groupId),
-                        start = request.start,
                         end = request.end,
                         cost = request.cost,
                         tanker = request.tanker,
