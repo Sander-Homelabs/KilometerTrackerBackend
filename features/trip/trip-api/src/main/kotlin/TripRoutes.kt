@@ -1,6 +1,8 @@
+import command.RegisterTankRefillCommand
 import command.RegisterTripCommand
 import dto.RegisterTripRequest
 import exception.Unauthenticated
+import extension.isNotNull
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
@@ -10,7 +12,7 @@ import io.ktor.server.routing.route
 import model.UserRole
 import java.util.UUID
 
-fun Route.tripRoutes(registerTrip: RegisterTripUseCase) {
+fun Route.tripRoutes(registerTrip: RegisterTripUseCase, registerTankRefill: RegisterTankRefillUseCase) {
     route("/trip") {
         install(Authenticate)
         install(RequireRole) { listOf(UserRole.USER) }
@@ -26,6 +28,18 @@ fun Route.tripRoutes(registerTrip: RegisterTripUseCase) {
                     registeredBy = call.getUserPrincipal()?.email ?: throw Unauthenticated()
                 )
             )
+            if (request.cost.isNotNull() && request.tanker.isNotNull()) {
+                registerTankRefill(
+                    RegisterTankRefillCommand(
+                        groupId = UUID.fromString(request.groupId),
+                        start = request.start,
+                        end = request.end,
+                        cost = request.cost,
+                        tanker = request.tanker,
+                        registeredBy = call.getUserPrincipal()?.email ?: throw Unauthenticated()
+                    )
+                )
+            }
             call.respond(HttpStatusCode.Created)
         }
     }

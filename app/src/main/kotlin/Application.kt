@@ -5,6 +5,7 @@ import AddGroupUserUseCase
 import AdminCreateGroupUseCase
 import LoginUseCase
 import RefreshAccessTokenUseCase
+import RegisterTankRefillUseCase
 import RegisterTripUseCase
 import RegisterUserUseCase
 import authRoutes
@@ -49,6 +50,6 @@ fun Application.module() {
         userRoutes(register = get<RegisterUserUseCase>(), activate = get<ActivateUserUseCase>())
         authRoutes(login = get<LoginUseCase>(), refresh = get<RefreshAccessTokenUseCase>())
         groupRoutes(adminCreate = get<AdminCreateGroupUseCase>(), addGroupUser = get<AddGroupUserUseCase>())
-        tripRoutes(registerTrip = get<RegisterTripUseCase>())
+        tripRoutes(registerTrip = get<RegisterTripUseCase>(), registerTankRefill = get<RegisterTankRefillUseCase>())
     }
 }
