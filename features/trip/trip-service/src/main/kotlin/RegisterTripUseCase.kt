@@ -12,7 +12,5 @@ class RegisterTripUseCase(private val tripRepo: TripRepository) {
 
         val domainTrip = Trip(command.groupId, command.start, command.end, command.email)
         tripRepo.save(domainTrip, command.registeredBy) ?: throw DatabaseError()
-
-        //TODO implement saving (and sending email about) fuel refills
     }
 }
