@@ -6,6 +6,9 @@ import model.TankRefill
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SortOrder
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insertReturning
 import org.jetbrains.exposed.sql.selectAll
 import java.util.UUID
@@ -33,6 +36,13 @@ class TankRefillRepositoryImpl(private val db: Database): TankRefillRepository {
                 it[TankRefillTable.cost] = tankRefill.cost
                 it[TankRefillTable.tanker] = tankRefill.tanker
             }.singleOrNull()?.toDomain()
+        }
+
+    override suspend fun delete(groupId: UUID, start: Int, user: String): Int =
+        dbQueryAs(user, db) {
+            TankRefillTable.deleteWhere {
+                (TankRefillTable.groupId eq groupId) and (TankRefillTable.start eq start)
+            }
         }
 
     private fun ResultRow.toDomain() = TankRefill(

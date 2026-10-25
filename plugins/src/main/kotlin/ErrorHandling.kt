@@ -14,6 +14,7 @@ import exception.MissingRefreshToken
 import exception.NoActiveRefreshToken
 import exception.RefreshTokenExpired
 import exception.Forbidden
+import exception.IllegalDeletion
 import exception.InvalidTripStart
 import exception.Unauthenticated
 import exception.UserAlreadyActive
@@ -62,6 +63,9 @@ fun Application.configureErrorHandling() {
         }
         exception<InvalidTripStart> { call, cause ->
             call.respond(HttpStatusCode.BadRequest, ErrorResponse("INVALID_TRIP_START", cause.message ?: "Invalid trip start"))
+        }
+        exception<IllegalDeletion> { call, cause ->
+            call.respond(HttpStatusCode.BadRequest, ErrorResponse("ILLEGAL_DELETION", cause.message ?: "Illegal deletion"))
         }
         exception<AccessTokenExpired> { call, cause ->
             call.respond(HttpStatusCode.Gone, ErrorResponse("ACCESS_TOKEN_EXPIRED", cause.message ?: "Access token expired"))

@@ -1,5 +1,7 @@
+import command.DeleteTripCommand
 import command.RegisterTankRefillCommand
 import command.RegisterTripCommand
+import dto.DeleteTripRequest
 import dto.RegisterTripRequest
 import exception.Unauthenticated
 import extension.isNotNull
@@ -7,12 +9,13 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
+import io.ktor.server.routing.delete
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import model.UserRole
 import java.util.UUID
 
-fun Route.tripRoutes(registerTrip: RegisterTripUseCase, registerTankRefill: RegisterTankRefillUseCase) {
+fun Route.tripRoutes(registerTrip: RegisterTripUseCase, registerTankRefill: RegisterTankRefillUseCase, deleteTrip: DeleteTripUseCase) {
     route("/trip") {
         install(Authenticate)
         install(RequireRole) { listOf(UserRole.USER) }
@@ -40,6 +43,18 @@ fun Route.tripRoutes(registerTrip: RegisterTripUseCase, registerTankRefill: Regi
                 )
             }
             call.respond(HttpStatusCode.Created)
+        }
+
+        delete {
+            val request = call.receive<DeleteTripRequest>()
+            deleteTrip(
+                DeleteTripCommand(
+                    groupId = UUID.fromString(request.groupId),
+                    start = request.start,
+                    deletedBy = call.getUserPrincipal()?.email ?: throw Unauthenticated()
+                )
+            )
+            call.respond(HttpStatusCode.NoContent)
         }
     }
 }
