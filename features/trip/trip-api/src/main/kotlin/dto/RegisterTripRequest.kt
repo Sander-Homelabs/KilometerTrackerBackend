@@ -8,6 +8,6 @@ data class RegisterTripRequest(
     val start: Int,
     val end: Int,
     val email: String,
-    val cost: Double?,
-    val tanker: String?
+    val cost: Double? = null,
+    val tanker: String? = null
 )
