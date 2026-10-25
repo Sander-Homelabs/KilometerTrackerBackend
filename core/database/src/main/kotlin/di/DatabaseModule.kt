@@ -16,7 +16,9 @@ import database.group.GroupRepositoryImpl
 import database.group.GroupUserRepositoryImpl
 import database.user.RefreshTokenRepositoryImpl
 import GroupUserRepository
+import TankRefillRepository
 import TripRepository
+import database.trip.TankRefillRepositoryImpl
 import database.trip.TripRepositoryImpl
 import java.net.URI
 
@@ -51,4 +53,5 @@ val databaseModule = module {
     single<GroupRepository> { GroupRepositoryImpl(get()) }
     single<GroupUserRepository> { GroupUserRepositoryImpl(get()) }
     single<TripRepository> { TripRepositoryImpl(get()) }
+    single<TankRefillRepository> { TankRefillRepositoryImpl(get()) }
 }
