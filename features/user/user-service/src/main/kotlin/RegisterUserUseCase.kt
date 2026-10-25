@@ -23,7 +23,7 @@ class RegisterUserUseCase(
         userConfirmationCodeRepo.upsert(email, code)
 
         emailService.sendEmail(EmailRequest.RegisterUser(
-            recipientEmail = email,
+            recipientEmail = listOf(email),
             activationCode = code,
             url = "https://kmtracker.goch.dev/activate/$code"
         ))

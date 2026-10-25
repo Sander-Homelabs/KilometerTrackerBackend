@@ -24,7 +24,7 @@ class AddGroupUserUseCase(
                 userConfirmationCodeRepo.upsert(userEmail, code)
 
                 emailService.sendEmail(EmailRequest.InviteUser(
-                    recipientEmail = userEmail,
+                    recipientEmail = listOf(userEmail),
                     admin = admin,
                     inviteCode = code,
                     url = "https://kmtracker.goch.dev/user/activate"
@@ -35,7 +35,7 @@ class AddGroupUserUseCase(
         val group = groupRepo.findById(groupId, admin) ?: return
         when (user) {
             is UserAccount -> emailService.sendEmail(EmailRequest.UserAdded(
-                recipientEmail = userEmail,
+                recipientEmail = listOf(userEmail),
                 group = group.name,
                 admin = admin
             ))

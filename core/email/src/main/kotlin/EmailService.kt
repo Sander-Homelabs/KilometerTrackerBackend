@@ -23,7 +23,12 @@ class EmailService {
             )
             is EmailRequest.TankRefillNotification -> mapOf(
                 "costPerKilometer" to request.costPerKilometer,
-                "costs" to request.costs,
+                "costs" to request.costs.map { cost ->
+                    mapOf(
+                        "cost" to cost.cost,
+                        "user" to cost.user
+                    )
+                },
                 "end" to request.end,
                 "start" to request.start,
                 "tanker" to request.tanker,
@@ -39,12 +44,12 @@ class EmailService {
             builder.putAdditionalProperty(key, JsonValue.from(value))
         }.build()
 
-        client.workflows().trigger(
-            WorkflowTriggerParams.builder()
-                .key(request.workflow.knockKey)
-                .addRecipient(request.recipientEmail)
-                .data(workflowData)
-                .build()
-        )
+        val workFlowTriggerParams = WorkflowTriggerParams.builder()
+            .key(request.workflow.knockKey)
+            .data(workflowData)
+
+        request.recipientEmail.forEach { workFlowTriggerParams.addRecipient(it) }
+
+        client.workflows().trigger(workFlowTriggerParams.build())
     }
 }

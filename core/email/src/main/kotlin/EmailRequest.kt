@@ -1,11 +1,11 @@
 import java.util.UUID
 
 sealed interface EmailRequest {
-    val recipientEmail: String
+    val recipientEmail: List<String>
     val workflow: EmailWorkflow
 
     data class ErrorNotification(
-        override val recipientEmail: String,
+        override val recipientEmail: List<String>,
         val error: String,
         val rawError: String? = null
     ) : EmailRequest {
@@ -13,7 +13,7 @@ sealed interface EmailRequest {
     }
 
     data class InviteUser(
-        override val recipientEmail: String,
+        override val recipientEmail: List<String>,
         val admin: String,
         val inviteCode: UUID,
         val url: String
@@ -22,7 +22,7 @@ sealed interface EmailRequest {
     }
 
     data class UserAdded(
-        override val recipientEmail: String,
+        override val recipientEmail: List<String>,
         val group: String,
         val admin: String,
     ) : EmailRequest {
@@ -30,19 +30,19 @@ sealed interface EmailRequest {
     }
 
     data class TankRefillNotification(
-        override val recipientEmail: String,
-        val costPerKilometer: Int,
+        override val recipientEmail: List<String>,
+        val costPerKilometer: Double,
         val start: Int,
         val end: Int,
         val tanker: String,
-        val totalCost: Int,
+        val totalCost: Double,
         val costs: List<TankRefillCosts>
     ) : EmailRequest {
         override val workflow = EmailWorkflow.TANK_REFILL_NOTIFICATION
     }
 
     data class RegisterUser(
-        override val recipientEmail: String,
+        override val recipientEmail: List<String>,
         val activationCode: UUID,
         val url: String
     ) : EmailRequest {
@@ -50,4 +50,4 @@ sealed interface EmailRequest {
     }
 }
 
-data class TankRefillCosts(val cost: Int, val user: String)
+data class TankRefillCosts(val cost: Double, val user: String)
